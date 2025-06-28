@@ -27,7 +27,15 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (userMessage: string) => {
+  const getSystemMessage = (deepDive: boolean) => {
+    if (deepDive) {
+      return "You are a helpful AI assistant. When responding, provide thorough, detailed explanations with comprehensive context, examples, and step-by-step breakdowns. Include relevant background information and explore multiple angles of the topic. Be exhaustive in your coverage while maintaining clarity and organization.";
+    } else {
+      return "You are a helpful AI assistant. Provide clear, concise, and direct responses. Focus on the key points without unnecessary elaboration. Keep explanations brief but informative.";
+    }
+  };
+
+  const handleSendMessage = async (userMessage: string, deepDive: boolean) => {
     if (!userMessage.trim()) return;
 
     // Add user message to chat
@@ -42,7 +50,7 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
         },
         body: JSON.stringify({
           user_message: userMessage,
-          developer_message: "You are a helpful AI assistant.",
+          developer_message: getSystemMessage(deepDive),
           api_key: apiKey,
           model: model,
         }),
