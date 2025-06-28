@@ -6,10 +6,12 @@ import ConfigPanel from '@/components/ConfigPanel';
 
 export default function Home() {
   const [apiKey, setApiKey] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-4.1-mini');
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
 
-  const handleConfigSubmit = (key: string) => {
+  const handleConfigSubmit = (key: string, model: string) => {
     setApiKey(key);
+    setSelectedModel(model);
     setIsConfigured(true);
   };
 
@@ -23,7 +25,7 @@ export default function Home() {
         {!isConfigured ? (
           <ConfigPanel onSubmit={handleConfigSubmit} />
         ) : (
-          <ChatInterface apiKey={apiKey} />
+          <ChatInterface apiKey={apiKey} model={selectedModel} />
         )}
       </div>
     </main>

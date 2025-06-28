@@ -11,9 +11,10 @@ interface Message {
 
 interface ChatInterfaceProps {
   apiKey: string;
+  model: string;
 }
 
-export default function ChatInterface({ apiKey }: ChatInterfaceProps) {
+export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -43,6 +44,7 @@ export default function ChatInterface({ apiKey }: ChatInterfaceProps) {
           user_message: userMessage,
           developer_message: "You are a helpful AI assistant.",
           api_key: apiKey,
+          model: model,
         }),
       });
 
@@ -90,6 +92,15 @@ export default function ChatInterface({ apiKey }: ChatInterfaceProps) {
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
       <div className="h-[600px] flex flex-col">
+        <div className="border-b px-4 py-2 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">AI Model:</span>
+            <span className="text-sm font-medium text-gray-800 bg-blue-100 px-2 py-1 rounded">
+              {model}
+            </span>
+          </div>
+        </div>
+        
         <div className="flex-1 overflow-y-auto p-4">
           <MessageDisplay messages={messages} />
           <div ref={messagesEndRef} />
