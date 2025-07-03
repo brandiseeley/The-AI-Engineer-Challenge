@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # Import OpenAI client for interacting with OpenAI's API
 from openai import OpenAI
 import os
-from typing import Optional
+from typing import Optional, List
 
 # Initialize FastAPI application with a title
 app = FastAPI(title="OpenAI Chat API")
@@ -24,11 +24,15 @@ app.add_middleware(
 
 # Define the data model for chat requests using Pydantic
 # This ensures incoming request data is properly validated
+class Message(BaseModel):
+    role: str  # 'user' or 'assistant' (or 'system')
+    content: str
+
 class ChatRequest(BaseModel):
-    developer_message: str  # Message from the developer/system
-    user_message: str      # Message from the user
+    messages: List[Message]  # Array of messages
     model: Optional[str] = "gpt-4.1-mini"  # Optional model selection with default
     api_key: str          # OpenAI API key for authentication
+    deep_dive: Optional[bool] = False  # Optional deep_dive flag
 
 # Define the main chat endpoint that handles POST requests
 @app.post("/api/chat")
@@ -42,10 +46,7 @@ async def chat(request: ChatRequest):
             # Create a streaming chat completion request
             stream = client.chat.completions.create(
                 model=request.model,
-                messages=[
-                    {"role": "developer", "content": request.developer_message},
-                    {"role": "user", "content": request.user_message}
-                ],
+                messages=[{"role": m.role, "content": m.content} for m in request.messages],
                 stream=True  # Enable streaming response
             )
             

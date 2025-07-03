@@ -42,6 +42,9 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
+    // Prepare the new messages array including the new user message
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -49,10 +52,10 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_message: userMessage,
-          developer_message: getSystemMessage(deepDive),
+          messages: newMessages,
           api_key: apiKey,
           model: model,
+          deep_dive: deepDive,
         }),
       });
 
