@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  done: boolean;
 }
 
 interface MessageDisplayProps {
@@ -14,6 +15,7 @@ interface MessageDisplayProps {
 
 export default function MessageDisplay({ messages }: MessageDisplayProps) {
   const lastSpokenIndex = useRef<number | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     console.log('[TTS] useEffect triggered. Messages:', messages);
@@ -21,10 +23,10 @@ export default function MessageDisplay({ messages }: MessageDisplayProps) {
       console.warn('[TTS] SpeechSynthesis API not available in this browser.');
       return;
     }
-    // Find the last assistant message
-    const lastAssistantIndex = [...messages].reverse().findIndex(m => m.role === 'assistant');
+    // Find the last assistant message that is done
+    const lastAssistantIndex = [...messages].reverse().findIndex(m => m.role === 'assistant' && m.done);
     if (lastAssistantIndex === -1) {
-      console.log('[TTS] No assistant message found.');
+      console.log('[TTS] No completed assistant message found.');
       return;
     }
     const actualIndex = messages.length - 1 - lastAssistantIndex;
@@ -52,6 +54,10 @@ export default function MessageDisplay({ messages }: MessageDisplayProps) {
     console.log('[TTS] Speaking:', lastAssistantMessage.content);
     const utterance = new window.SpeechSynthesisUtterance(lastAssistantMessage.content);
     utterance.lang = 'en-US'; // You can make this configurable
+    utteranceRef.current = utterance; // Keep reference so it isn't GC'd
+    utterance.onend = () => {
+      utteranceRef.current = null; // Clean up after speaking
+    };
     window.speechSynthesis.speak(utterance);
     lastSpokenIndex.current = actualIndex;
   }, [messages]);

@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import MessageInput from './MessageInput';
 import MessageDisplay from './MessageDisplay';
+import { useVoiceRecorder } from './useVoiceRecorder';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  done?: boolean;
 }
 
 interface ChatInterfaceProps {
@@ -89,50 +91,70 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
         });
         if (!response.ok) throw new Error('Failed to get PDF chat response');
         const data = await response.json();
-        setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
-      } else {
-        // Normal chat
-        response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: newMessages,
-            api_key: apiKey,
-            model: model,
-            deep_dive: deepDive,
-          }),
-        });
-        if (!response.ok) throw new Error('Failed to get response');
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error('No reader available');
-        let assistantMessage = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const text = new TextDecoder().decode(value);
-          assistantMessage += text;
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage?.role === 'assistant') {
-              lastMessage.content = assistantMessage;
-            } else {
-              newMessages.push({ role: 'assistant', content: assistantMessage });
-            }
-            return newMessages;
-          });
-        }
+        setMessages(prev => [...prev, { role: 'assistant', content: data.answer, done: true }]);
+        return;
       }
+      // Normal chat
+      response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: newMessages,
+          api_key: apiKey,
+          model: model,
+          deep_dive: deepDive,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to get response');
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      let assistantMessage = '';
+      let firstChunk = true;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = new TextDecoder().decode(value);
+        assistantMessage += text;
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage?.role === 'assistant') {
+            lastMessage.content = assistantMessage;
+            lastMessage.done = false;
+          } else {
+            newMessages.push({ role: 'assistant', content: assistantMessage, done: false });
+          }
+          return newMessages;
+        });
+        firstChunk = false;
+      }
+      // Mark the last assistant message as done
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage?.role === 'assistant') {
+          lastMessage.done = true;
+        }
+        return newMessages;
+      });
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, there was an error processing your message.' 
+        content: 'Sorry, there was an error processing your message.',
+        done: true
       }]);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Voice recorder integration
+  const { isRecording, error: voiceError } = useVoiceRecorder((transcribedText) => {
+    if (transcribedText && transcribedText.trim()) {
+      handleSendMessage(transcribedText, false); // deepDive false by default for voice
+    }
+  });
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
@@ -162,6 +184,15 @@ export default function ChatInterface({ apiKey, model }: ChatInterfaceProps) {
         {uploadError && (
           <div className="px-4 pb-1 text-xs text-red-600">{uploadError}</div>
         )}
+        {/* Voice Recording Indicator & Error */}
+        <div className="px-4 pb-1">
+          {isRecording && (
+            <div className="text-blue-700 text-sm font-semibold">Recording... Release spacebar to send</div>
+          )}
+          {voiceError && (
+            <div className="text-red-600 text-xs">{voiceError}</div>
+          )}
+        </div>
         <div className="border-t p-4 flex items-center gap-2">
           {/* PDF Upload Button */}
           <button
