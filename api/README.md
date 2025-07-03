@@ -56,6 +56,37 @@ The server will start on `http://localhost:8000`
 - **Method**: GET
 - **Response**: `{"status": "ok"}`
 
+### PDF Upload and RAG Chat Endpoints
+
+#### 1. Upload PDF
+- **Endpoint:** `POST /api/upload_pdf`
+- **Description:** Upload a PDF file. The backend will index it and return a session id for chat.
+- **Request:**
+  - Content-Type: multipart/form-data
+  - Field: `file` (PDF file)
+- **Response:**
+  ```json
+  { "session_id": "<uuid>" }
+  ```
+
+#### 2. PDF Chat (RAG)
+- **Endpoint:** `POST /api/pdf_chat`
+- **Description:** Ask a question about the uploaded PDF using Retrieval Augmented Generation (RAG).
+- **Request Body:**
+  ```json
+  {
+    "session_id": "<uuid>",
+    "query": "What is the main topic of the document?",
+    "model": "gpt-4.1-mini", // optional
+    "api_key": "sk-...",     // optional
+    "k": 4                    // optional, number of relevant chunks
+  }
+  ```
+- **Response:**
+  ```json
+  { "answer": "..." }
+  ```
+
 ## API Documentation
 
 Once the server is running, you can access the interactive API documentation at:

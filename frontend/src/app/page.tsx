@@ -21,7 +21,6 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
           AI Chat Interface
         </h1>
-        
         {!isConfigured ? (
           <ConfigPanel onSubmit={handleConfigSubmit} />
         ) : (
