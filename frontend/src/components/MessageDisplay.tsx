@@ -13,6 +13,49 @@ interface MessageDisplayProps {
 }
 
 export default function MessageDisplay({ messages }: MessageDisplayProps) {
+  const lastSpokenIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    console.log('[TTS] useEffect triggered. Messages:', messages);
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      console.warn('[TTS] SpeechSynthesis API not available in this browser.');
+      return;
+    }
+    // Find the last assistant message
+    const lastAssistantIndex = [...messages].reverse().findIndex(m => m.role === 'assistant');
+    if (lastAssistantIndex === -1) {
+      console.log('[TTS] No assistant message found.');
+      return;
+    }
+    const actualIndex = messages.length - 1 - lastAssistantIndex;
+    if (lastSpokenIndex.current === actualIndex) {
+      console.log('[TTS] Already spoken for index', actualIndex);
+      return; // Already spoken
+    }
+    const lastAssistantMessage = messages[actualIndex];
+    if (!lastAssistantMessage) {
+      console.log('[TTS] No last assistant message at index', actualIndex);
+      return;
+    }
+    if (!lastAssistantMessage.content.trim()) {
+      console.log('[TTS] Assistant message is empty or whitespace.');
+      return;
+    }
+
+    // Stop any ongoing speech
+    if (window.speechSynthesis.speaking) {
+      console.log('[TTS] Cancelling ongoing speech.');
+      window.speechSynthesis.cancel();
+    }
+
+    // Speak the message
+    console.log('[TTS] Speaking:', lastAssistantMessage.content);
+    const utterance = new window.SpeechSynthesisUtterance(lastAssistantMessage.content);
+    utterance.lang = 'en-US'; // You can make this configurable
+    window.speechSynthesis.speak(utterance);
+    lastSpokenIndex.current = actualIndex;
+  }, [messages]);
+
   return (
     <div className="space-y-4">
       {messages.map((message, index) => (
