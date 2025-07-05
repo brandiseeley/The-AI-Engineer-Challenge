@@ -1,16 +1,16 @@
-# 🚀 How to Merge Your Feature Branch (feat/pdf-rag-chat) Back to Main
+# 🚀 How to Merge Your Feature Branch (feat/accessible-rag) Back to Main
 
 ## 🟢 Option 1: The GitHub Pull Request (PR) Way
 
 1. **Push your branch to GitHub (if you haven't already):**
    ```sh
-   git push origin feat/pdf-rag-chat
+   git push origin feat/accessible-rag
    ```
 
 2. **Open a Pull Request:**
    - Go to your repo on GitHub.
-   - Click the "Compare & pull request" button for `feat/pdf-rag-chat`.
-   - Fill in a fun, descriptive PR title and summary (mention PDF upload, RAG, and OpenAI key passing!).
+   - Click the "Compare & pull request" button for `feat/accessible-rag`.
+   - Fill in a fun, descriptive PR title and summary (mention accessible chat interface, PDF upload, RAG, voice recording, and OpenAI key passing!).
    - Hit "Create pull request".
 
 3. **Review & Merge:**
@@ -24,12 +24,12 @@
 
 1. **Push your branch (if you haven't already):**
    ```sh
-   git push origin feat/pdf-rag-chat
+   git push origin feat/accessible-rag
    ```
 
 2. **Create a PR from the terminal:**
    ```sh
-   gh pr create --base main --head feat/pdf-rag-chat --title "PDF RAG Chat: Upload, Index, and Chat with PDFs!" --body "This PR adds PDF upload, vector indexing, and RAG chat using aimakerspace. Users can provide their OpenAI API key from the frontend."
+   gh pr create --base main --head feat/accessible-rag --title "Accessible RAG Chat: Voice, PDF Upload, and Enhanced UI!" --body "This PR adds an accessible chat interface with voice recording, PDF upload, vector indexing, and RAG chat using aimakerspace. Features include speech-to-text, text-to-speech, and a modern UI. Users can provide their OpenAI API key from the frontend."
    ```
 
 3. **Merge the PR (after review):**
@@ -47,8 +47,8 @@
   ```
 - Delete your feature branch if you want:
   ```sh
-  git branch -d feat/pdf-rag-chat
-  git push origin --delete feat/pdf-rag-chat
+  git branch -d feat/accessible-rag
+  git push origin --delete feat/accessible-rag
   ```
 
 ---
