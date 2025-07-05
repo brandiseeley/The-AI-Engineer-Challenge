@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-  done: boolean;
+  done?: boolean;
 }
 
 interface MessageDisplayProps {
@@ -24,7 +24,7 @@ export default function MessageDisplay({ messages }: MessageDisplayProps) {
       return;
     }
     // Find the last assistant message that is done
-    const lastAssistantIndex = [...messages].reverse().findIndex(m => m.role === 'assistant' && m.done);
+    const lastAssistantIndex = [...messages].reverse().findIndex(m => m.role === 'assistant' && m.done === true);
     if (lastAssistantIndex === -1) {
       console.log('[TTS] No completed assistant message found.');
       return;
